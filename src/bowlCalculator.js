@@ -2,70 +2,81 @@
 
 var STRIKE = 'X',
     SPARE = '/',
+    MISS = '-',
     MAX_ROLL_SCORE = 10,
-    FINAL_TURN = 10,
+    FINAL_FRAME = 10,
 
     //These variables represent the state of the game
-    turn,
-    turnRoll,
+    frame,
+    frameRoll,
 
     /**
      * Initialize the state of the game
      */
     initializeGameState = function () {
-        turn = 1;
-        turnRoll = 1;
+        frame = 1;
+        frameRoll = 1;
     },
 
     /**
-     * Set game state for the next turn
+     * Set game state for the next frame
      */
-    nextTurn = function () {
-        ++turn;
-        turnRoll = 1;
+    nextFrame = function () {
+        ++frame;
+        frameRoll = 1;
     },
 
     /**
-     * Set state for the next roll in the turn
+     * Set state for the next roll in the frame
      */
-    nextTurnRoll = function () {
-        ++turnRoll;
+    nextFrameRoll = function () {
+        ++frameRoll;
     },
 
     /**
-     * Return true if on first turn roll
+     * Return true if on first frame roll
      * @return {Boolean}
      */
-    firstTurnRoll = function () {
-        return turnRoll === 1
+    isFirstFrameRoll = function () {
+        return frameRoll === 1
     },
 
     /**
-     * Calculate the total score for the game. This function
-     * is supplied to array.reduce
+     * Returns true if on the final (10th) frame
+     * @return {Boolean}
      */
-    calculate = function (total, rollResult, i, rolls) {
+    isFinalFrame = function () {
+        return frame === FINAL_FRAME;
+    },
+
+    /**
+     * Calculate the total score for the game. When a spare or strike is
+     * rolled, then a bonus is added to the score, unless the player is
+     * on the final frame.
+     *
+     * This function is supplied to array.reduce
+     */
+    calculateScore = function (total, rollResult, i, rolls) {
         var rollScore = 0;
 
         if (rollResult === STRIKE) {
             rollScore = MAX_ROLL_SCORE;
-
-            if (turn !== FINAL_TURN) {
+            if (!isFinalFrame()) {
                 rollScore += calculateBonus(rolls[i+1], rolls[i+2]);
-                nextTurn();
+                nextFrame();
             }            
         } else if (rollResult === SPARE) {
-            rollScore = MAX_ROLL_SCORE - rolls[i-1];
-            if (turn !== FINAL_TURN) {
+            rollScore = MAX_ROLL_SCORE - parseInt(rolls[i-1]);
+            if (!isFinalFrame()) {
                 rollScore += calculateBonus(rolls[i+1], 0);
-                nextTurn();
+                nextFrame();
             }
         } else {
-            rollScore = parseInt(rollResult);
-            if (firstTurnRoll()) {
-                nextTurnRoll();
+            rollScore = rollResult === MISS ? 0 : parseInt(rollResult);
+            if (isFirstFrameRoll()) {
+                nextFrameRoll();
             } else {
-                nextTurn();
+                nextFrame();
             }
         }
 
@@ -95,5 +106,5 @@ exports.getScore = function(arg) {
 
     initializeGameState();
 
-    return rolls.reduce(calculate, 0);
+    return rolls.reduce(calculateScore, 0);
 }

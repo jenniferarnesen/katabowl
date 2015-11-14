@@ -28,6 +28,11 @@ describe('Bowling', function() {
         expect(res).to.equal(300);
     });
 
+    it('should correctly calculate a score with misses', function () {
+        var res = calc.getScore('9-9-9-9-9-9-9-9-9-9-');
+        expect(res).to.equal(90);
+    });
+
     it('should correctly calculate a screw up at the end', function () {
         var res = calc.getScore('XXXXXXXXXX11');
         expect(res).to.equal(273);
