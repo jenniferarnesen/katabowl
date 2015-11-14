@@ -6,35 +6,37 @@ var STRIKE = 'X',
     FIRST_ROLL = 0,
     SECOND_ROLL = 1,
 
+    /**
+     * Parse the rolls into the corresponding 10 frames of the game
+     */
     parseIntoFrames = function (rolls) {
         var frames = [],
             fi = 0,
-            frameRoll = FIRST_ROLL,
+            ri = FIRST_ROLL,
             roll,
 
             initializeNextFrame = function () {
                 fi += 1;
                 frames[fi] = [];
-                frameRoll = FIRST_ROLL;
+                ri = FIRST_ROLL;
             };
 
             frames[fi] = [];
 
         for (var i = 0; i < rolls.length; i+=1) {
             roll = rolls[i];
+            frames[fi][ri] = roll;
             if (roll === STRIKE || roll === SPARE) {
-                frames[fi][frameRoll] = roll;
                 if (fi !== FINAL_FRAME) {
                     initializeNextFrame();
                 } else {
-                    frameRoll += 1;
+                    ri += 1;
                 }
             } else {
-                frames[fi][frameRoll] = roll;
-                if (frameRoll === SECOND_ROLL && fi !== FINAL_FRAME) {
+                if (ri === SECOND_ROLL && fi !== FINAL_FRAME) {
                     initializeNextFrame();
                 } else {
-                    frameRoll += 1;
+                    ri += 1;
                 }
             }
         }
@@ -53,9 +55,7 @@ var STRIKE = 'X',
         var frameScore = 0,
             rollResult;
 
-        for (var i = 0; i < frameResult.length; i += 1) {
-            rollResult = frameResult[i];
-
+        frameResult.forEach(function (rollResult, i) {
             if (rollResult === STRIKE) {
                 frameScore += MAX_ROLL_SCORE;
                 if (fi !== FINAL_FRAME) {
@@ -65,12 +65,12 @@ var STRIKE = 'X',
                 if (fi !== FINAL_FRAME) {
                     frameScore = MAX_ROLL_SCORE + calculateBonus(rollResult, fi, frames);
                 } else {
-                        frameScore = frameScore + MAX_ROLL_SCORE - frameResult[i-1];
+                    frameScore += MAX_ROLL_SCORE - frameResult[i-1];
                 }
             } else {
                 frameScore += rollResult === MISS ? 0 : parseInt(rollResult);
             }
-        }
+        });
 
         return parseInt(total) + frameScore;
     },
@@ -105,10 +105,8 @@ var STRIKE = 'X',
         return next1 + next2;
     };
 
-exports.getScore = function(arg) {
-    var rolls = arg.split(''),
-        frames = parseIntoFrames(rolls);
-
+exports.getScore = function(rolls) {
+    var frames = parseIntoFrames(rolls);
 
     return frames.reduce(calculateScore, 0);
 }
