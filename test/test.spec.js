@@ -1,5 +1,6 @@
 var expect = require('chai').expect,
-    calc = require('../src/bowlCalculator');
+    //calc = require('../src/bowlCalculator');
+    calc = require('../src/frameCalc');
 
 describe('Bowling', function() {
     
@@ -18,9 +19,19 @@ describe('Bowling', function() {
         expect(res).to.equal(86);
     });
 
+    it('should correctly calculate the score with spare and strike in final frame', function () {
+        var res = calc.getScore('3344225423451654362/X');
+        expect(res).to.equal(86);
+    });
+
     it('should correctly calculate the score with a mix of strikes and spares', function () {
         var res = calc.getScore('234/53X8/124563241/7');
         expect(res).to.equal(103);
+    });
+
+    it('should correctly calculate the score with strike and spare in final frame', function () {
+        var res = calc.getScore('234/53X8/12456324X2/');
+        expect(res).to.equal(106);
     });
 
     it('should correctly calculate the perfect score', function () {

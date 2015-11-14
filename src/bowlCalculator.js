@@ -22,7 +22,7 @@ var STRIKE = 'X',
      * Set game state for the next frame
      */
     nextFrame = function () {
-        ++frame;
+        frame += 1;
         frameRoll = 1;
     },
 
@@ -30,7 +30,7 @@ var STRIKE = 'X',
      * Set state for the next roll in the frame
      */
     nextFrameRoll = function () {
-        ++frameRoll;
+        frameRoll += 1;
     },
 
     /**
