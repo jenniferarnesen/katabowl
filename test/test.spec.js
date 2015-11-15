@@ -1,6 +1,5 @@
 var expect = require('chai').expect,
     calc = require('../src/bowlCalculator');
-    //calc = require('../src/frameCalc');
 
 describe('Bowling', function() {
     
