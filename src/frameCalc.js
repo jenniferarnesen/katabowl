@@ -7,6 +7,28 @@ var STRIKE = 'X',
     SECOND_ROLL = 1,
 
     /**
+     *  Convert the given roll result, which could be a symbol,
+     *  into an integer
+     */
+    getBaseRollScore = function (rollResult, prevRollResult) {
+        var res;
+        switch (rollResult) {
+            case STRIKE:
+                res = 10;
+                break;
+            case MISS:
+                res = 0;
+                break;
+            case SPARE:
+                res = MAX_ROLL_SCORE - parseInt(prevRollResult);
+                break;
+            default:
+                res = parseInt(rollResult);
+        }
+        return res;
+    },
+
+    /**
      * Parse the rolls into the corresponding 10 frames of the game
      */
     parseIntoFrames = function (rolls) {
@@ -52,8 +74,7 @@ var STRIKE = 'X',
      * This function is supplied to array.reduce
      */
     calculateScore = function (total, frameResult, fi, frames) {
-        var frameScore = 0,
-            rollResult;
+        var frameScore = 0;
 
         frameResult.forEach(function (rollResult, i) {
             if (rollResult === STRIKE) {

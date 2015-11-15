@@ -6,85 +6,8 @@ var STRIKE = 'X',
     MAX_ROLL_SCORE = 10,
     FINAL_FRAME = 10,
 
-    //These variables represent the state of the game
-    frame,
-    frameRoll,
-
     /**
-     * Initialize the state of the game
-     */
-    initializeGameState = function () {
-        frame = 1;
-        frameRoll = 1;
-    },
-
-    /**
-     * Set game state for the next frame
-     */
-    nextFrame = function () {
-        frame += 1;
-        frameRoll = 1;
-    },
-
-    /**
-     * Set state for the next roll in the frame
-     */
-    nextFrameRoll = function () {
-        frameRoll += 1;
-    },
-
-    /**
-     * Return true if on first frame roll
-     * @return {Boolean}
-     */
-    isFirstFrameRoll = function () {
-        return frameRoll === 1
-    },
-
-    /**
-     * Returns true if on the final (10th) frame
-     * @return {Boolean}
-     */
-    isFinalFrame = function () {
-        return frame === FINAL_FRAME;
-    },
-
-    /**
-     * Calculate the total score for the game. When a spare or strike is
-     * rolled, then a bonus is added to the score, unless the player is
-     * on the final frame.
-     *
-     * This function is supplied to array.reduce
-     */
-    calculateScore = function (total, rollResult, i, rolls) {
-        var rollScore = 0;
-
-        if (rollResult === STRIKE) {
-            rollScore = MAX_ROLL_SCORE;
-            if (!isFinalFrame()) {
-                rollScore += calculateBonus(rolls[i+1], rolls[i+2]);
-                nextFrame();
-            }            
-        } else if (rollResult === SPARE) {
-            rollScore = MAX_ROLL_SCORE - parseInt(rolls[i-1]);
-            if (!isFinalFrame()) {
-                rollScore += calculateBonus(rolls[i+1], 0);
-                nextFrame();
-            }
-        } else {
-            rollScore = rollResult === MISS ? 0 : parseInt(rollResult);
-            if (isFirstFrameRoll()) {
-                nextFrameRoll();
-            } else {
-                nextFrame();
-            }
-        }
-
-        return parseInt(total) + rollScore;
-    },
-
-    /**
-     * Calculate the bonus for the turn. The rules
+     * Calculate the bonus for the frame. The rules
      * determining this logic can be found here:
      * https://en.wikipedia.org/wiki/Ten-pin_bowling#Scoring
      */
@@ -99,12 +22,58 @@ var STRIKE = 'X',
         };
 
         return next1 + next2;
-    }
+    },
+
+    getReducer = function (gameState) {
+        return function (total, rollResult, i, rolls) {
+            var rollScore = 0;
+
+            if (rollResult === STRIKE) {
+                rollScore = MAX_ROLL_SCORE;
+                if (!gameState.isFinalFrame()) {
+                    rollScore += calculateBonus(rolls[i+1], rolls[i+2]);
+                    gameState.nextFrame();
+                }
+            } else if (rollResult === SPARE) {
+                rollScore = MAX_ROLL_SCORE - parseInt(rolls[i-1]);
+                if (!gameState.isFinalFrame()) {
+                    rollScore += calculateBonus(rolls[i+1], 0);
+                    gameState.nextFrame();
+                }
+            } else {
+                rollScore = rollResult === MISS ? 0 : parseInt(rollResult);
+                if (gameState.isFirstFrameRoll()) {
+                    gameState.nextFrameRoll();
+                } else {
+                    gameState.nextFrame();
+                }
+            }
+
+            return parseInt(total) + rollScore;
+        };
+    };
 
 exports.getScore = function(arg) {
-    var rolls = arg.split('');
+    var rolls = arg.split(''),
+        gameState = {
+            frame: 1,
+            frameRoll: 1,
+            nextFrame: function () {
+                this.frame += 1;
+                this.frameRoll = 1;
+            },
+            nextFrameRoll: function () {
+                this.frameRoll += 1;
+            },
+            isFirstFrameRoll: function () {
+                return this.frameRoll === 1
+            },
+            isFinalFrame: function () {
+                return this.frame === FINAL_FRAME;
+            }
+        };
 
-    initializeGameState();
+    var reducer = getReducer(gameState);
 
-    return rolls.reduce(calculateScore, 0);
+    return rolls.reduce(reducer, 0);
 }
