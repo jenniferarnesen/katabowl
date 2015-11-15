@@ -53,13 +53,15 @@ var STRIKE = 'X',
     },
 
     /**
-     * Return true if roll index is in the final frame
+     * Iterates through the rolls of the game and determines which frame
+     * the current roll is in.
+     * Returns true if the roll is in the final frame
      */
     isFinalFrame = function (i, rolls) {
         var currentFrame = 0,
             frameRoll = 1,
 
-            lastFrameRoll = function (roll) {
+            isLastFrameRoll = function (roll) {
                 return roll === STRIKE || roll === SPARE || frameRoll === 2;
             },
 
@@ -76,7 +78,7 @@ var STRIKE = 'X',
             if (ri === i || currentFrame === FINAL_FRAME) {
                 break;
             }
-            if (lastFrameRoll(rolls[ri])) {
+            if (isLastFrameRoll(rolls[ri])) {
                 nextFrame();
             } else {
                 nextFrameRoll();
